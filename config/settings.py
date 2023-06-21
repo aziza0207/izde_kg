@@ -39,10 +39,10 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'drf_yasg',
+    'phonenumber_field',
 
     # Apps
     'app.property.apps.PropertyConfig',
-    'app.realtor.apps.RealtorConfig',
     'app.oauth.apps.OauthConfig',
 
 ]
