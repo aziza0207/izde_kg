@@ -1,6 +1,7 @@
 from rest_framework import generics, viewsets, status
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.settings import api_settings
@@ -9,11 +10,10 @@ from .serializers import (
     UserSerializer,
     AuthTokenSerializer,
     AgentSerializer,
-    AgentInfoSerializer,
-    AgentListSerializer
-)
+    AgentListSerializer,
+    AgentInfoSerializer)
 from app.property.models import Advertisement
-from app.property.serializers import AdvertisementSerializer
+from app.property.serializers import AdvertisementSerializer, AdDetailSerializer
 
 User = get_user_model()
 
@@ -29,7 +29,10 @@ class AgentAPIView(generics.UpdateAPIView):
     permission_classes = (IsAuthenticated,)
 
     def get_object(self):
-        return User.objects.get(pk=self.request.user.id, is_agent=False)
+        try:
+            return User.objects.get(pk=self.request.user.id, is_agent=False)
+        except Exception as e:
+            raise ValidationError("You are already agent!")
 
 
 class CreateTokenView(ObtainAuthToken):
@@ -50,7 +53,7 @@ class AgentInfoViewSet(viewsets.ReadOnlyModelViewSet):
     """
     serializer_class = AgentInfoSerializer
     queryset = User.objects.filter(is_agent=True)
-    
+
     def get_serializer_class(self):
         if self.action == 'list':
             return AgentListSerializer
@@ -81,3 +84,11 @@ class AdsInUserWishListView(generics.ListAPIView):
 
     def get_queryset(self):
         return Advertisement.objects.filter(wishlist=self.request.user).order_by('-created_date')
+
+
+class AdsInUserWishListDetailView(generics.RetrieveAPIView):
+    serializer_class = AdDetailSerializer
+    permission_classes = (IsAuthenticated,)
+
+    def get_queryset(self):
+        return Advertisement.objects.filter(wishlist=self.request.user)

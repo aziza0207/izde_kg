@@ -123,6 +123,12 @@ class AuthTokenSerializer(serializers.Serializer):
 
 class FeedbackSerializer(serializers.ModelSerializer):
     class Meta:
+        model = get_user_model()
+        fields = '__all__'
+
+    def to_representation(self, instance):
+        return super().to_representation(instance)
+
         model = Feedback
         fields = '__all__'
 
@@ -164,35 +170,18 @@ class AgentInfoSerializer(serializers.ModelSerializer):
         return serializer.data
 
 
-class AgentSerializer(serializers.ModelSerializer):
-    region = RegionSerializer(many=True, required=True)
-    languages = LanguageSerializer(many=True, required=True)
-    full_name = serializers.CharField(required=True)
-    phone = serializers.IntegerField(required=True)
-
-    class Meta:
-        model = User
-        fields = ['photo',
-                  'full_name',
-                  'description',
-                  'phone',
-                  'languages',
-                  'experience',
-                  'region',
-                  'is_agent',
-                  ]
-
-    def validated_full_name(self, value):
-        if len(value) < 2:
-            raise serializers.ValidationError(_("Name is too short"))
-        else:
-            return value
-
-
 class FeedbackAgent(serializers.ModelSerializer):
     """
     Сериалайзер для отображения отзывов об агенте
     """
+
+    # pass
+    #
+    #
+    #     model = User
+    #     fields = ['']
+
     #    model = User
     #    fields = ['']
     # pass
+

@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
-from .models import Property, FeedBack, Image, Address, District, City
+from .models import (Property, FeedBack, Image, Address, District, City, Advertisement)
+from app.oauth.serializers import UserSerializer
 
 
 class PropertyListSerializer(serializers.ModelSerializer):
@@ -11,10 +12,9 @@ class PropertyListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Property
+
         fields = ('id', 'owner', 'slug', 'purpose')  # Укажите только нужные поля
-
-
-from .models import Property, FeedBack, Image, Advertisement
+        # Укажите только нужные поля
 
 
 class FeedBackSerializer(serializers.ModelSerializer):
@@ -30,23 +30,20 @@ class FeedBackSerializer(serializers.ModelSerializer):
 
 
 class PropertySerializer(serializers.ModelSerializer):
-    """
-    Сериализатор для отображения всех объявлений
-    """
+    feedback = FeedBackSerializer(many=True, required=False)
+    owner = serializers.PrimaryKeyRelatedField(read_only=True,
+                                               default=serializers.CurrentUserDefault())
 
     class Meta:
         model = Property
         fields = '__all__'
 
-    feedback = FeedBackSerializer(many=True)
-
     def to_representation(self, instance):
         context = super().to_representation(instance)
         context['images'] = ImagesSerializer(
             instance.images.all(), many=True, context=self.context).data
-        feedback_data = self.fields['feedback'].to_representation(
+        context['feedback'] = self.fields['feedback'].to_representation(
             instance.feedback.all())
-        context['feedback'] = feedback_data
         context['address'] = AddressSerializer(
             instance.address, many=False).data
         context['owner'] = instance.owner.email
@@ -100,6 +97,39 @@ class CitySerializer(serializers.ModelSerializer):
 
 class AdvertisementSerializer(serializers.ModelSerializer):
     "Временный сериалязер"
+
     class Meta:
         model = Advertisement
-        fields = '__all__'
+
+        fields = (
+            'deal_choices',
+            'currency_choices',
+            'price',
+            'additional_info'
+        )
+
+    def to_representation(self, instance):
+        context = super().to_representation(instance)
+        context['region'] = instance.property.address.region
+        context['city'] = instance.property.address.city.title
+        context['district'] = instance.property.address.district.title
+        context['by'] = instance.property.owner.full_name
+        return context
+
+
+class AdDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Advertisement
+        fields = ('deal_choices',
+                  'currency_choices',
+                  'price',
+                  'additional_info')
+
+    def to_representation(self, instance):
+        context = super().to_representation(instance)
+        context['location'] = AddressSerializer(instance.property.address).data
+        context['owner'] = instance.property.owner.full_name
+        context['email'] = instance.property.owner.email
+        context['phone'] = instance.property.owner.phone
+
+        return context
