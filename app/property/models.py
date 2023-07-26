@@ -8,7 +8,15 @@ from ..service import choices, service
 
 bm = dict(blank=True, max_length=300)
 
+class Image(models.Model):
+    name = models.CharField(max_length=90)
+    file = models.ImageField(upload_to=service.upload_image_path)
+    main = models.BooleanField(default=False)
 
+<<<<<<< HEAD
+    def __str__(self) -> str:
+        return f'{self.name}'
+=======
 class Image(models.Model):
     property = models.ForeignKey(
         'Property', related_name='images', on_delete=models.CASCADE)
@@ -22,6 +30,7 @@ class Image(models.Model):
         verbose_name = "Изображение"
         verbose_name_plural = "Изображения"
 
+>>>>>>> 6eeb663169c96a41a3a81064e704a2c60a065635
 
 class Property(models.Model):
     owner = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
@@ -45,6 +54,10 @@ class Property(models.Model):
         "Address"), on_delete=models.CASCADE, blank=True)
 
     slug = models.SlugField(max_length=100)
+
+  
+
+
 
     def __str__(self):
         return self.slug
@@ -73,6 +86,10 @@ class Advertisement(models.Model):
     wishlist = models.ManyToManyField(CustomUser, related_name='wishlist_advertisement',
                                       default=None, blank=True)
 
+    class Meta:
+        verbose_name = 'Объявление'
+        verbose_name_plural = 'Объявления'
+
 
 class Address(models.Model):
     region = models.CharField(
@@ -87,6 +104,10 @@ class Address(models.Model):
     def __str__(self):
         return str(self.street) + str(self.apartment)
 
+    class Meta:
+        verbose_name = 'Адрес'
+        verbose_name_plural = 'Адреса'
+
 
 class City(models.Model):
     title = models.CharField(max_length=50)
@@ -94,12 +115,20 @@ class City(models.Model):
     def __str__(self):
         return str(self.title)
 
+    class Meta:
+        verbose_name = 'Город'
+        verbose_name_plural = 'Города'
+
 
 class District(models.Model):
     title = models.CharField(max_length=50)
 
     def __str__(self):
         return str(self.title)
+
+    class Meta:
+        verbose_name = 'Район'
+        verbose_name_plural = 'Районы'
 
 
 class FeedBack(models.Model):
@@ -116,3 +145,7 @@ class FeedBack(models.Model):
 
     def __str__(self):
         return f"{self.property} - {self.user} - {self.date.strftime('%Y-%m-%d %H:%M:%S')}"
+
+    class Meta:
+        verbose_name = 'Отзыв'
+        verbose_name_plural = 'Отзывы'
